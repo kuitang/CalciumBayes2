@@ -1,0 +1,35 @@
+# Latex
+*.aux
+*.glo
+*.idx
+*.log
+*.toc
+*.ist
+*.acn
+*.acr
+*.alg
+*.bbl
+*.blg
+*.dvi
+*.glg
+*.gls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc1
+*.out
+*.synctex.gz
+*.pdf
+
+# Data
+data/*
+
+# MATLAB backups
+*~
+
+#Specific files
+src/good_sim_data_20n_10m.mat
+

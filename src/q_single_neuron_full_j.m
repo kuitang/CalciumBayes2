@@ -38,7 +38,7 @@ beta = reshape(theta(N+2:end), N, S - 1);
 
 %reg_param1 = 1e1;
 %reg_param2 = 1e1;
-reg_param1 = 1;
+reg_param1 = 0;
 reg_param2 = 0;
 q_sum = 0;
 

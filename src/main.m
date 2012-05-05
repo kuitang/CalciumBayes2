@@ -10,13 +10,15 @@ run_parallel = 1;
 % truncate the data even more!
 % truncdata = truncdata(:,1:100);
 % n = truncdata;
-
-load('../data/good_sim_data_01.mat')
-n = sim.n(1:10,:);
+data = '../data/12n_2m30s.mat';
+load(data)
+n = sim.n;
+%load('../data/good_sim_data_01.mat')
+%n = sim.n(1:10,:);
 
 %% Set optimization options
 optim_options = optimset('LargeScale','on','Algorithm', ...
-    'trust-region-reflective','GradObj','on','Hessian','user-supplied', 'MaxIter',100);
+    'trust-region-reflective','GradObj','on','Hessian','user-supplied', 'MaxIter',30);
 
 %% Set physical parameters
 % Physical parameters (TODO: Set up and figure out scale!)
@@ -33,7 +35,7 @@ M = 50; % size of particle sampler
 
 % Parameter matrices
 % TODO: Set up priors!
-
+iters = 1;
 %% Set codistributed arrays
 if run_parallel
     spmd(N)
@@ -83,7 +85,7 @@ end
 %until the change in connectivity matrix w is below threshold change
 
 w_prev = ones(size(w)) * 500;
-thresh_w = .001;
+thresh_w = .1;
 
 ll = -Inf;
 
@@ -96,7 +98,7 @@ while(norm(w - w_prev) > thresh_w)
     disp('*********************************');
     w_prev = w; 
     
-    
+   disp(['iters: ' num2str(iters)]); 
     spmd(N)  
         for i = drange(1:N)
             disp(['Neuron ' num2str(i) '/' num2str(N)]);            
@@ -139,9 +141,12 @@ while(norm(w - w_prev) > thresh_w)
         end
     end % spmd
     
-
-    
-    %% Log likelihood for whole model
+    iters = iters + 1;
+    w_gathered = gather(w);
+    beta_gathered = gather(beta);
+    b_gathered = gather(b);
+    save([data '_results'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
+    %% Log likelihood for whole model'
     %nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
     %ll = [ll nll];
     %disp('nll =');
@@ -149,11 +154,5 @@ while(norm(w - w_prev) > thresh_w)
 
 end
 
-w_gather = gather(w);
-b_gather = gather(b);
-beta_gather = gather(beta);
-h_gather = gather(h);
-
-save('finished_run.mat');
 
 

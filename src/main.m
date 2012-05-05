@@ -2,8 +2,8 @@ clear
 run_parallel = 1;
 
 %% use the same random number sequence for debugging purposes
-RandStream.setDefaultStream ...
-     (RandStream('mt19937ar','seed',2));
+%RandStream.setDefaultStream ...
+%     (RandStream('mt19937ar','seed',2));
 
 %% Load data
 % load('../data/truncdata.mat')
@@ -11,7 +11,7 @@ RandStream.setDefaultStream ...
 % truncdata = truncdata(:,1:100);
 % n = truncdata;
 
-load('good_sim_data_01.mat')
+load('../data/good_sim_data_01.mat')
 n = sim.n(1:10,:);
 
 %% Set optimization options

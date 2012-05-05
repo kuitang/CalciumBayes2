@@ -57,38 +57,33 @@ for t = S+2 : T
 
         % Compute probabilities
         % q = normpdf(h(:,t,m), h_mean, sd)
-        emission_param = 1 - exp(-exp(J) * delta);
-
-        if (isnan(emission_param))
-          disp('emission is nan');
-          disp(J);
-        end
+        eeJd = exp(-exp(J) * delta);
+        %emission_param = 1 - exp(-exp(J) * delta);
+        emission_param = 1 - eeJd;
         if data(i,t)
             emission_prob = emission_param;
         else
             emission_prob = 1 - emission_param;
         end        
+        
+        
         pf(t, m) = emission_prob * pf(t-1, m);
         if(isnan(pf(t,m)))
           disp(emission_prob);
         end
         %[norm(h(:,t,m)) emission_prob pf(t,m)]
     end
-        if(isnan(sum(pf(t,:))))
-            disp('pf before summing');
-            disp(pf(t,:));
-             return
-             end
     
     pf_new(t,:) = pf(t,:) / sum(pf(t,:));
 
     if(isnan(sum(pf_new(t,:))))
       disp('pf before resampling');
+      disp(pf(t-1,:));
       disp(pf(t,:));
       return
     end
     
-    pf = pf_new;
+    pf(t,:) = pf_new(i,:);
     % Stratified resampling explained in http://en.wikipedia.org/wiki/Particle_filter
     Neff = 1/(pf(t,:) * pf(t,:)');
     if Neff < Nthr
@@ -189,11 +184,7 @@ for t_index = 0:(T-S-2)
     pb(t-1,:) = sum(r, 1);%sum over 1 or 2 here? I THINK 1 - BS
     
     pb(t-1,:) = pb(t-1,:) / sum(pb(t-1,:));
-<<<<<<< HEAD
     if(isnan(sum(sum(pb))))
-=======
-    if(isnan(sum(sum(b))))
->>>>>>> a049df48e7ea1a24f9a575f3988dd7cb06eead9d
       disp('PB WEIGHT IS NAN!!!');
     end
 end

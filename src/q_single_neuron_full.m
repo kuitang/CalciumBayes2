@@ -33,12 +33,12 @@ S  = size(beta,2) + 1;
 %beta = squeeze(params.beta(i,:,:));
 M = size(h,3);
 b_i = theta(1);
-%w(i,:) = reshape(theta(2:N+1),1,N);
-%beta = reshape(theta(N+2:end), N, S - 1);
+w = reshape(theta(2:N+1),1,N);
+beta = reshape(theta(N+2:end), N, S - 1);
 
 %reg_param1 = 1e1;
 %reg_param2 = 1e1;
-reg_param1 = 0;
+reg_param1 = 1;
 reg_param2 = 0;
 q_sum = 0;
 
@@ -125,7 +125,7 @@ for t = S+1:T
     end
     
     % Update the gradient and Hessian with information from this timeslice    
-    g = g + dQ * dJ;    
+    g = g + dQ(1) * dJ;    
     H = H + ddQ * (dJ*dJ');
 end
 
@@ -134,11 +134,11 @@ end
 flatbeta = beta(:);
 
 g = -g;
-g(2) = g(2) + reg_param1 * sum(sign(w));
-g(3:end) = g(3:end) + reg_param2 * sum(sign(flatbeta));
+g(2:N+1) = g(2:N+1) + reg_param1 * sign(w(:));
+g(N+2:end) = g(N+2:end) + reg_param2 * sign(flatbeta);
 
-%H = -H;
-H = zeros(N*S+1, N*S+1);
+H = -H;
+%H = zeros(N*S+1, N*S+1);
 
 % No regularization for H, since the L1 regularization terms have zero
 % second derivative

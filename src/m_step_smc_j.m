@@ -2,6 +2,7 @@ function [theta_intrinsic] = m_step_smc_j(theta_intrinsic, options, varargin)
 
     %options = optimset(options,'DerivativeCheck', 'on');
     %options = optimset(options,'FinDiffType', 'central');
+    options = optimset(options, 'Display', 'iter');
     lb = ones(size(theta_intrinsic)) * -.1;
     ub = ones(size(theta_intrinsic)) * .1;
     lb(1) = 0; lb(2) = -5;

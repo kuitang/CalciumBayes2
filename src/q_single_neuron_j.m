@@ -38,7 +38,7 @@ beta(i,:) = reshape(theta_intrinsic(3:1+S), 1, S - 1);
 %reg_param1 = 1e1;
 %reg_param2 = 1e1;
 reg_param1 = 0; 
-reg_param2 = .5;
+reg_param2 = 0;
 q_sum = 0;
 
 g = zeros(S + 1, 1);
@@ -153,8 +153,8 @@ g = -g;
 g(2) = g(2) + reg_param1 * sign(w(i));
 g(3:end) = g(3:end) + reg_param2(1) * sign(flatbeta)';
 
-H = -H;
-%H = zeros(S + 1, S + 1);
+%H = -H;
+H = zeros(S + 1, S + 1);
 
 % No regularization for H, since the L1 regularization terms have zero
 % second derivative

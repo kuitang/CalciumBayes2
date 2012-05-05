@@ -135,7 +135,7 @@ for t = S+1:T
     end
     
     % Update the gradient and Hessian with information from this timeslice    
-    g = g + dJ;    
+    g = g + dJ;     
     H = H + (dJ*dJ');
 end
 

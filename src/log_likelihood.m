@@ -30,11 +30,11 @@ spmd
                 else
                     Qm = -eJd;                    
                 end
-                llv(i) = llv(i) + p_weights(t,m) * Qm;
+                llv(i) = llv(i) + p_weights(i,t,m) * Qm;
             end
         end                
     end
 end
-ll = sum(llv);
+ll = sum(gather(llv));
 
 end

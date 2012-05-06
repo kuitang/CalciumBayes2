@@ -6,39 +6,31 @@ function ll = log_likelihood(beta, b, w, h, n, delta, p_weights)
 
 %log(P(data | params))
 
-S  = size(beta,3) + 1;
+S  = size(beta,2) + 1;
 [N, T] = size(n);
-M = size(h,4);
+M = size(h,3);
 
-spmd
-    llv = codistributed.zeros(1, N);
-end
 
-spmd
-    for i = drange(1:N)
-        beta_i = reshape(beta(i,:,:), N, S - 1);
-        w_i    = reshape(w(i,:), 1, N);        
 
+ll = 0;
         for t = S+1:T
                         
-            I_terms = beta_i .* n(:,(t-2):-1:(t-S));
+
+            I_terms = beta .* n(:,(t-2):-1:(t-S));
             I = sum(I_terms(:));
             
             for m = 1:M                
-                J = b(i) + I + w_i * h(i,:,t,m)';
+                J = b + I + w * h(:,t,m)';
                 eJd = exp(J)*delta;                
-                if n(i,t)
+                if n(t)
                     eeJd = exp(-eJd);
                     Qm = log(1 - eeJd);                    
                 else
                     Qm = -eJd;                    
                 end
-                llv(i) = llv(i) + p_weights(i,t,m) * Qm;
+                ll = ll + p_weights(t,m) * Qm;
             end
         end                
-    end
-end
 
-ll = sum(gather(llv));
 
 end

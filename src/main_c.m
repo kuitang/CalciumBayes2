@@ -31,7 +31,7 @@ delta = .010;
 beta_bound = 5;
 w_bound = 5;
 w_reg = 4;
-beta_reg = 0;
+beta_reg = 3;
 
 
 
@@ -91,7 +91,7 @@ end
 %until the change in connectivity matrix w is below threshold change
 
 w_prev = ones(size(w)) * 500;
-thresh_w = .1;
+thresh_w = .001;
 
 ll = -Inf;
 
@@ -137,7 +137,7 @@ while(norm(w - w_prev) > thresh_w)
     w_gathered = gather(w);
     beta_gathered = gather(beta);
     b_gathered = gather(b);
-    save([data '_12n_one_m_beta.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
+    save([data '_main_c.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
     %% Log likelihood for whole model'
     %nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
     %ll = [ll nll];

@@ -1,4 +1,4 @@
-function [q g H] = q_single_neuron_full(theta, beta, w, h, n, i, delta, tau, sigma, p_weights)
+function [q g H] = q_single_neuron_full(theta, beta, w, h, n, i, delta, tau, sigma, p_weights, w_reg, beta_reg)
 
 %function q = q_single_neuron(theta_intrinsic, params, h, n, i, delta, tau, sigma, p_weights)
 %Q_SINGLE_NEURON 
@@ -38,8 +38,8 @@ beta = reshape(theta(N+2:end), N, S - 1);
 
 %reg_param1 = 1e1;
 %reg_param2 = 1e1;
-reg_param1 = 2;
-reg_param2 = 0;
+% reg_param1 = 2;
+% reg_param2 = 0;
 q_sum = 0;
 
 g = zeros(N*S+1, 1);
@@ -134,8 +134,8 @@ end
 flatbeta = beta(:);
 
 g = -g;
-g(2:N+1) = g(2:N+1) + reg_param1 * sign(w(:));
-g(N+2:end) = g(N+2:end) + reg_param2 * sign(flatbeta);
+g(2:N+1) = g(2:N+1) + w_reg * sign(w(:));
+g(N+2:end) = g(N+2:end) + beta_reg * sign(flatbeta);
 
 H = -H;
 %H = zeros(N*S+1, N*S+1);
@@ -143,5 +143,5 @@ H = -H;
 % No regularization for H, since the L1 regularization terms have zero
 % second derivative
 
-q = -q_sum + reg_param1 * sum(abs(w)) + reg_param2 * sum(abs(flatbeta));
+q = -q_sum + w_reg * sum(abs(w)) + beta_reg * sum(abs(flatbeta));
 %q = -q_sum;

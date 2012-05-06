@@ -130,7 +130,7 @@ while(norm(w - w_prev) > thresh_w)
     w_gathered = gather(w);
     beta_gathered = gather(beta);
     b_gathered = gather(b);
-    save([data '_12n_one_m.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
+    save([data '_12n_one_m_beta.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
     %% Log likelihood for whole model'
     %nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
     %ll = [ll nll];

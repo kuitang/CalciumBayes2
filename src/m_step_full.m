@@ -4,8 +4,8 @@ function [ theta ] = m_step_full(theta, options, N, varargin)
 
     %options = optimset(options, 'DerivativeCheck', 'on');
     %options = optimset(options,'FinDiffType', 'central');
-    lb = ones(size(theta)) * -.1;
-    ub = ones(size(theta)) * .1;
+    lb = ones(size(theta)) * -5;
+    ub = ones(size(theta)) * 5;
     lb(1) = 0; lb(2:N+1) = -5;
     ub(1) = 5; ub(2:N+1) = 5;
     [theta,fval,exitflag,output] = fmincon('q_single_neuron_full',theta, [], [], [], [], lb, ub,[],options, varargin{:});

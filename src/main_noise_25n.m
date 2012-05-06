@@ -141,7 +141,7 @@ while(norm(w - w_prev) > thresh_w)
     spmd
     disp(clock);    
     for i = drange(1:N)
-           llv(i) = log_likelihood(reshape(beta(i,:,:),N,S-1), b(i), w(i,:), squeeze(h(i,:,:,:)),n(i,:),delta,squeeze(p_weights(i,:,:)));
+           llv(i,1) = log_likelihood(i, reshape(beta(i,:,:),N,S-1), b(i), w(i,:), squeeze(h(i,:,:,:)),n,delta,squeeze(p_weights(i,:,:)));
         end
     end
     disp('OVER');

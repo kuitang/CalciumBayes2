@@ -10,9 +10,9 @@ run_parallel = 1;
 % truncate the data even more!
 % truncdata = truncdata(:,1:100);
 % n = truncdata;
-data = '../data/12n_2m30s.mat';
-load(data)
-n = sim.n;
+data = '../data/25n_noise';
+load([data '.mat'])
+n = sim.n(1:12,1:15000);
 %load('../data/good_sim_data_01.mat')
 %n = sim.n(1:10,:);
 
@@ -24,9 +24,15 @@ optim_options = optimset('LargeScale','on','Algorithm', ...
 % Physical parameters (TODO: Set up and figure out scale!)
 % Currently using unit (discrete) time and bullshit values
 %sigma = 0.01;
-sigma = 1e-14;
+sigma = .05;
 tau = .020; %set to match simulator
 delta = .010;
+
+beta_bound = .1;
+w_bound = 5;
+w_reg = 4;
+beta_reg = 0;
+
 
 
 [N T] = size(n);
@@ -85,7 +91,7 @@ end
 %until the change in connectivity matrix w is below threshold change
 
 w_prev = ones(size(w)) * 500;
-thresh_w = .1;
+thresh_w = .001;
 
 ll = -Inf;
 
@@ -104,53 +110,40 @@ while(norm(w - w_prev) > thresh_w)
             disp(['Neuron ' num2str(i) '/' num2str(N)]);            
 
             %% Initialize the intrinsic parameters
-            theta_intrinsic = [b(i) w(i,i) reshape(beta(i, i, :),1,S-1)];
-            old_theta_intr = ones(size(theta_intrinsic)) * 500;
-
-            %% Let the intrinsic parameters converge
-            while(theta_intrinsic(2) - old_theta_intr(2) > .1 || norm(theta_intrinsic([1 3:end]) - old_theta_intr([1 3:end])) > 0.01)
-                
-                disp(['NEURON ' num2str(i) ' NORM: ' num2str(norm(theta_intrinsic([1 3:end]) - old_theta_intr([1 3:end])))]);
-                
-                %% E step (SMC) for one neuron                
-                old_theta_intr = theta_intrinsic;
-                beta_subset = reshape(beta(i,:,:), N, S - 1);
-                [p_weights(i,:,:) h(i,:,:,:)] = e_step_smc(i, M, tau, delta, sigma, beta_subset, b(i), w(i,:), n);
-
-                %% M step for the intrinsic parameters for one neuron
-                theta_intrinsic = m_step_smc(theta_intrinsic, optim_options, beta_subset, w(i,:), squeeze(h(i,:,:,:)), n, i, delta, tau, sigma, squeeze(p_weights(i,:,:)));                
-                b(i,1) = theta_intrinsic(1);
-                w(i,i) = theta_intrinsic(2);
-                beta(i, i, :) = reshape(theta_intrinsic(3:1+S),1,1,S-1);
-                disp('new params:');
-                disp(theta_intrinsic);
-            end
-           disp(['NEURON ' num2str(i) ' DONE!']);
-       end
-    end
-    spmd(N)
-        for i = drange(1:N)
-            %% M step for all parameters
             theta = [b(i) w(i,:) reshape(beta(i, :, :),1,N*S-N)];
+                
+                
+            %% E step (SMC) for one neuron                
             beta_subset = reshape(beta(i,:,:), N, S - 1);
-            theta = m_step_full(theta, optim_options, N, beta_subset, w(i,:), squeeze(h(i,:,:,:)), n, i, delta, tau, sigma, squeeze(p_weights(i,:,:)));
+            [p_weights(i,:,:) h(i,:,:,:)] = e_step_smc(i, M, tau, delta, sigma, beta_subset, b(i), w(i,:), n);
 
+            %% M step for the intrinsic parameters for one neuron
+            theta = m_step_full(theta, optim_options, N, beta_bound, w_bound, beta_subset, w(i,:), squeeze(h(i,:,:,:)), n, i,...
+                delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg, beta_reg);
             b(i,1) = theta(1);
             w(i,:) = reshape(theta(2:N+1),1,N);
             beta(i,:,:) = reshape(theta(N+2:end), 1, N, (S - 1));
+            disp('new params:');
+            disp(b(i,1));
+            disp(w(i,:));
         end
-    end % spmd
-    
+           disp(['NEURON ' num2str(i) ' DONE!']);
+    end
+
+    disp('OVER!');
+    disp(b);
+    disp(w);
     iters = iters + 1;
     w_gathered = gather(w);
     beta_gathered = gather(beta);
     b_gathered = gather(b);
-    save([data '_results'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
     %% Log likelihood for whole model'
-    %nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
-    %ll = [ll nll];
-    %disp('nll =');
-    %disp(nll); 
+    nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
+    ll = [ll nll];
+    disp('nll =');
+    disp(nll); 
+    save([data '_25n_noise.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
+
 
 end
 

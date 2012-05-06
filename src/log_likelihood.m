@@ -12,6 +12,9 @@ M = size(h,4);
 
 spmd
     llv = codistributed.zeros(1, N);
+end
+
+spmd
     for i = drange(1:N)
         beta_i = reshape(beta(i,:,:), N, S - 1);
         w_i    = reshape(w(i,:), 1, N);        

@@ -118,7 +118,7 @@ while(norm(w - w_prev) > thresh_w)
             [p_weights(i,:,:) h(i,:,:,:)] = e_step_smc(i, M, tau, delta, sigma, beta_subset, b(i), w(i,:), n);
 
             %% M step for the intrinsic parameters for one neuron
-            theta = m_step_full(theta, optim_options, N, beta_bound, w_bound, beta_subset, w(i,:), squeeze(h(i,:,:,:)), n, i,...
+            theta = m_step_pos_beta(theta, optim_options, N, beta_bound, w_bound, beta_subset, w(i,:), squeeze(h(i,:,:,:)), n, i,...
                 delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg, beta_reg);
             b(i,1) = theta(1);
             w(i,:) = reshape(theta(2:N+1),1,N);

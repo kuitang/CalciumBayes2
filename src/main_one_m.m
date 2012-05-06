@@ -10,9 +10,9 @@ run_parallel = 1;
 % truncate the data even more!
 % truncdata = truncdata(:,1:100);
 % n = truncdata;
-data = '../data/12n_2m30s.mat';
-load(data)
-n = sim.n;
+data = '../data/25n_10m';
+load([data '.mat'])
+n = newsim.n(1:12,1:15000);
 %load('../data/good_sim_data_01.mat')
 %n = sim.n(1:10,:);
 
@@ -106,10 +106,8 @@ while(norm(w - w_prev) > thresh_w)
             %% Initialize the intrinsic parameters
             theta = [b(i) w(i,:) reshape(beta(i, :, :),1,N*S-N)];
                 
-            disp(['NEURON ' num2str(i) ' NORM: ' num2str(norm(theta_intrinsic([1 3:end]) - old_theta_intr([1 3:end])))]);
                 
             %% E step (SMC) for one neuron                
-            old_theta = theta;
             beta_subset = reshape(beta(i,:,:), N, S - 1);
             [p_weights(i,:,:) h(i,:,:,:)] = e_step_smc(i, M, tau, delta, sigma, beta_subset, b(i), w(i,:), n);
 
@@ -119,18 +117,20 @@ while(norm(w - w_prev) > thresh_w)
             w(i,:) = reshape(theta(2:N+1),1,N);
             beta(i,:,:) = reshape(theta(N+2:end), 1, N, (S - 1));
             disp('new params:');
-            disp(b);
-            disp(w);
+            disp(b(i,1));
+            disp(w(i,:));
         end
            disp(['NEURON ' num2str(i) ' DONE!']);
     end
 
-    
+    disp('OVER!');
+    disp(b);
+    disp(w);
     iters = iters + 1;
     w_gathered = gather(w);
     beta_gathered = gather(beta);
     b_gathered = gather(b);
-    save([data '_results'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
+    save([data '_12n_one_m.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
     %% Log likelihood for whole model'
     %nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
     %ll = [ll nll];

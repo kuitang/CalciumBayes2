@@ -10,8 +10,8 @@ run_parallel = 1;
 % truncate the data even more!
 % truncdata = truncdata(:,1:100);
 % n = truncdata;
-data = '../data/12n_2m30s.mat';
-load(data)
+data = '../data/12n_2m30s';
+load([data '.mat'])
 n = sim.n;
 %load('../data/good_sim_data_01.mat')
 %n = sim.n(1:10,:);
@@ -145,7 +145,7 @@ while(norm(w - w_prev) > thresh_w)
     w_gathered = gather(w);
     beta_gathered = gather(beta);
     b_gathered = gather(b);
-    save([data '_results'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
+    save([data '_results.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
     %% Log likelihood for whole model'
     %nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
     %ll = [ll nll];

@@ -59,7 +59,7 @@ if run_parallel
 
         w = w .* binornd(1,.1,N,N);%second arg is "sparesness"
 
-
+        llv = zeros(N,1,codist);
 %        for i = drange(1:N)
 %            w(i,i) = -abs(normrnd(.6,.2));
 %        end
@@ -118,8 +118,9 @@ while(norm(w - w_prev) > thresh_w)
             [p_weights(i,:,:) h(i,:,:,:)] = e_step_smc(i, M, tau, delta, sigma, beta_subset, b(i), w(i,:), n);
 
             %% M step for the intrinsic parameters for one neuron
-            theta = m_step_bw(theta, optim_options, N, beta_bound, w_bound, beta_subset, w(i,:), squeeze(h(i,:,:,:)), n, i,...
-                delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg, beta_reg);
+            theta = m_step_bw(theta, optim_options, w_bound, beta_subset, squeeze(h(i,:,:,:)), n, i,...
+                delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg);
+            
             b(i,1) = theta(1);
             w(i,:) = reshape(theta(2:N+1),1,N);
             disp('new params:');
@@ -130,20 +131,19 @@ while(norm(w - w_prev) > thresh_w)
     end
     spmd(N)  
         for i = drange(1:N)
-            disp(['Neuron ' num2str(i) '/' num2str(N)]);            
+            disp(['Neuron ' num2str(i) '/' num2str(N) ' beta estimation']);            
 
             %% Initialize the intrinsic parameters
-            theta = [reshape(beta(i, :, :),1,N*S-N)];
+            theta = reshape(beta(i, :, :),1,N*S-N);
                 
             beta_subset = reshape(beta(i,:,:), N, S - 1);
 
             %% M step for the intrinsic parameters for one neuron
-            theta = m_step_beta(theta, optim_options, N, beta_bound, w_bound, beta_subset, w(i,:), b(i), squeeze(h(i,:,:,:)), n, i,...
-                delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg, beta_reg);
+            theta = m_step_beta(theta, optim_options, N, beta_bound, S, w(i,:), b(i), squeeze(h(i,:,:,:)), n, i,...
+                delta, tau, sigma, squeeze(p_weights(i,:,:)), beta_reg);
+            
             beta(i,:,:) = reshape(theta(N+2:end), 1, N, (S - 1));
             disp('new params:');
-            disp(b(i,1));
-            disp(w(i,:));
         end
            disp(['NEURON ' num2str(i) ' DONE!']);
     end

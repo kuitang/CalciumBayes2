@@ -148,16 +148,26 @@ while(norm(w - w_prev) > thresh_w)
            disp(['NEURON ' num2str(i) ' DONE!']);
     end
     
+    disp('OVER!');
+    disp(b);
+    disp(w);
     iters = iters + 1;
     w_gathered = gather(w);
     beta_gathered = gather(beta);
     b_gathered = gather(b);
-    save([data '_results'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
     %% Log likelihood for whole model'
-    %nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
-    %ll = [ll nll];
-    %disp('nll =');
-    %disp(nll); 
+    spmd
+        for i = drange(1:N)
+           llv(i,1) = log_likelihood(i, reshape(beta(i,:,:),N,S-1), b(i), w(i,:), squeeze(h(i,:,:,:)),n,delta,squeeze(p_weights(i,:,:)));
+        end
+    end
+    nll = sum(gather(llv));
+        ll = [ll nll];
+    disp('ll =');
+    disp(ll);
+    disp('diff = ');
+    disp(ll(iters) - ll(iters-1));
+    save([data '_two_mstep.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
 
 end
 

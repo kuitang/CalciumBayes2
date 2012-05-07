@@ -139,18 +139,17 @@ while(norm(w - w_prev) > thresh_w)
     b_gathered = gather(b);
     %% Log likelihood for whole model'
     spmd
-    disp(clock);    
-    for i = drange(1:N)
-           llv(i,1) = log_likelihood(i,reshape(beta(i,:,:),N,S-1), b(i), w(i,:), squeeze(h(i,:,:,:)),n(i,:),delta,squeeze(p_weights(i,:,:)));
+        for i = drange(1:N)
+           llv(i,1) = log_likelihood(i, reshape(beta(i,:,:),N,S-1), b(i), w(i,:), squeeze(h(i,:,:,:)),n,delta,squeeze(p_weights(i,:,:)));
         end
     end
-    disp('OVER');
-    disp(clock);
     nll = sum(gather(llv));
         ll = [ll nll];
-    disp('nll =');
-    disp(nll); 
-    save([data '_25n_pos_beta_reg.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
+    disp('ll =');
+    disp(ll);
+    disp('diff = ');
+    disp(ll(iters) - ll(iters-1));
+    save([data '_25n_noise.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
 
 
 end

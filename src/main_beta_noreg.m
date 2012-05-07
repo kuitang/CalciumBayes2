@@ -18,7 +18,7 @@ n = sim.n(1:12,1:15000);
 
 %% Set optimization options
 optim_options = optimset('LargeScale','on','Algorithm', ...
-    'trust-region-reflective','GradObj','on','Hessian','user-supplied', 'MaxIter',30, 'DerivativeCheck', 'on', 'FinDiffType', 'central');
+    'trust-region-reflective','GradObj','on','Hessian','user-supplied', 'MaxIter',30);
 
 %% Set physical parameters
 % Physical parameters (TODO: Set up and figure out scale!)
@@ -149,7 +149,7 @@ while(norm(w - w_prev) > thresh_w)
     disp(ll);
     disp('diff = ');
     disp(ll(iters) - ll(iters-1));
-    save([data '_25n_noise.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
+    save([data '_beta_noreg.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
 
 
 end

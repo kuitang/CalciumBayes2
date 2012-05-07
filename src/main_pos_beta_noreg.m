@@ -149,7 +149,7 @@ while(norm(w - w_prev) > thresh_w)
     disp(ll);
     disp('diff = ');
     disp(ll(iters) - ll(iters-1));
-    save([data '_25n_noise.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
+    save([data '_pos_beta_noreg.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
 
 
 end

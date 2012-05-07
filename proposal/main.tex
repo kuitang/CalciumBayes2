@@ -119,7 +119,7 @@ functional neural connectivity, there are still improvements to be
 made to current models. For example, current models do not address
 unobserved inputs to the system. This is a significant limitation,
 as current experiments typically monitor only a field ot 10 to 25 
-neurons \citep{mischenko2011}, leading to potential loss of data
+neurons \citep{mishchencko2011}, leading to potential loss of data
 to the unobserved blanket surrounding the field.
 
 In this paper, we account for these indirect influences on the
@@ -165,11 +165,11 @@ $t-\Delta$ where $\Delta$ is the size of each discrete time step.
 From \citep{mishchencko2011}, we model $h_{ij}(t)$ as an autoregressive
 function:
 \begin{equation}
-\label{h} h_{ij}(t) = (1-\Delta/\tau_{ij}^h)h_{ij}(t-\Delta)
-  + n_j(t-\Delta)+\sigma_{ij}^h\sqrt{\Delta}\epsilon_{ij}^h(t),
+\label{h} h_{ij}(t) = (1-\Delta/\tau)h_{ij}(t-\Delta)
+  + n_j(t-\Delta)+\sigma\sqrt{\Delta}\epsilon
 \end{equation}
-where $ \tau_{ij}^h $ is the decay time constant, $\sigma_{ij}^h$
-is the standard deviation of the noise and $\epsilon_{ij}^h$ is a
+where $ \tau_{ij}^h $ is the decay time constant, $\sigma$
+is the standard deviation of the noise and $\epsilon$ is a
 standard normal random variable representing noise.  The parameterization
 of $h_{ij}(t)$ by $\Delta$ ensures that the physical parameters of
 the model scale with the timestep size, which is determined by
@@ -177,8 +177,8 @@ temporal resolution of observed data and computational complexity
 of memory.
 
 In this model, we set $\tau = 0.02\text{s}$ to match
-experimentally-observed values \citep{mischenko2011} and we leave
-$\sigma$ to be inferred. Although the model supports variable decay
+experimentally-observed values \citep{mishchencko2011} and we leave
+$\sigma$ to be inferred. Although the model supports separate decay
 and noise terms for each pair of neurons, we used single global
 values for simplicity.
 
@@ -195,7 +195,14 @@ $n_i(t)$ by adding the term,
 \label{new_term}
 I_i(t)=\displaystyle\sum\limits_{s=2}^S\sum\limits_{j=1}^N \beta_{ijs}n_j(t-s\Delta) + \lambda_{is},
 \end{equation}
-to the input function $J_i(t)$. Here, $s$ is the number of time steps back and $\beta_{ijs}$ is the weight of the indirect influence of $n_j(t-s\Delta)$ on $n_i(t)$. The term $\lambda_{is}$ represents the indirect influence from unknown sources, i.e., influences not mediated through any of the $N$ observed neurons, on $n_i(t)$.  Along with inferring the direct connectivity matrix, $W$, we will also infer the three dimensional indirect connectivity matrix, $B$, and the $N\times S-2$ matrix of $\lambda_{is}$ terms.
+to the input function $J_i(t)$. Here, $s$ is the number of time
+steps back and $\beta_{ijs}$ is the weight of the indirect influence
+of $n_j(t-s\Delta)$ on $n_i(t)$. The term $\lambda_{is}$ represents
+the indirect influence from unknown sources, i.e., influences not
+mediated through any of the $N$ observed neurons, on $n_i(t)$.
+Along with inferring the direct connectivity matrix, $W$, we will
+also infer the three dimensional indirect connectivity matrix, $B$,
+and the $N\times S-2$ matrix of $\lambda_{is}$ terms.
 
 Following \citep{mishchencko2011}, we define the spiking probability as 
 \begin{equation} \label{f}
@@ -228,7 +235,7 @@ From (\ref{f}), the complete-data log-likelihood is given by
 \begin{align*} \label{Q}  
 Q(\theta,\theta^{old}) &= E_{P(H|N,\theta^{old})} \left[ \log{P(H,N|\theta)} \right] 
 \\                     &= \int{ \log\left[P(H,N|\theta)\right] P(H|N,\theta^{old}) dH }
-\\                     &= \sum_{it} \int \log\left[P(\mathbf{h}_i(t),n_i(t)|\theta^{old})\right] P(\mathbf{h}_i(t)|n_i(t),b_i,\mathbf{w}_i) d\mathbf{h}_i(t)
+\\                     &= \sum_{it} \int \log\left[P(\mathbf{h}_i(t),n_i(t)|\theta^{old})\right] P(\mathbf{h}_i(t)|N,b_i,\mathbf{w}) d\mathbf{h}_i(t)
 \end{align*}
 where the last equality holds since the integrand can be separated
 into a sum of terms for each neuron-timestep $(i,t)$.
@@ -250,8 +257,86 @@ in the estimated $\beta$ terms. We thus modified
 To improve results for estimating $\beta$, we 
 
 \subsection{E Step with Sequential Monte Carlo}
-TODO
+Each neuron $i$ is driven by a separate HMM, with shared parameters.
+We evaluate $Q$ for each neuron in parallel.  The observed sequence
+is $n_i(t)$; the hidden sequence is the $\mathbf{h}_i(t)$. In
+addition, due to the cross-neuron history terms, we require the
+spike train data of all other neurons in our inference (though we
+only infer the hidden variables for one neuron at a time).  (\ref{h}),
+the transition probabilities are linear-Gaussian distributions;
+however, the emission probabilities (\ref{f}) are not, so we cannot
+use a standard Kalman filter \citep{bishop}.  Instead, we adapt a
+sequential Monte Carlo approach used in \citep{volgelstein2009,
+mishchencko2011} to estimate flouresence and calcium concentrations
+to produce a sampled approximation of $Q(\theta,\theta^{old})$. We
+use a standard forward particle filter \citep{bishop} and a marginal
+backward smoother \citep{doucet2000} to obtain the approximation
+distribution to $P(H|N,\theta^{old})$.
 
+We initialize the particle filter by sampling $M$ particles from a
+normal distribution centered at 0 with standard deviation
+$\sigma\sqrt{\Delta}$ with uniform weights. At each timestep we draw
+particles from the \emph{prior proposal}
+$P(\mathbf{h}_i^{(m)}(t)) = P(\mathbf{h}_i(t) | \mathbf{h}_i^{(m)}(t - 1))$
+which is a just a normal distribution given by (\ref{h}). We update
+the particle weights using the recurrence (omitting $\theta$ for brevity)
+\begin{equation} \label{pf}
+p_f^{(m)}(t) = p_f^{(m)}(t - 1)P(n_i(t) | \mathbf{h}_i(t)) 
+\end{equation}
+
+As the particle filter evolves, many particles will have low
+likelihoods in the next timeslice, driving many weights to zero.
+To prevent degeneracy, we employ stratified resampling when the
+effective number of particles
+\begin{equation} \label{Neff}
+N_{eff} = \left|\mathbf{p}_f(t)\right|^{-1}
+\end{equation}
+is less than $M/2$, where $\mathbf{p}_f(t)$ denotes a vector of all
+particle weights for one timestep \citep{volgelstein2009}. That is,
+we draw $M$ new samples from our current set of samples with
+replacement with probabilities proportional to their current weights,
+and reset weights to uniform.
+
+Once all samples and forward weights $p_f^(m)$ have been computed,
+we run the backwards marginal filter recurrences beginning at $t=T$,
+when the filtering and smoothing distributions are identical:
+\begin{align}
+r^{(m,m')}(t, t - 1) &= p_b^{(m)}\frac{p_f^{(m)}P(\mathbf{h}_i^{(m)}(t)|\mathbf{h}_i^{(m')}(t - 1))}{\sum_{m'} p_f^{(m')}(t - 1) P(\mathbf{h}_i^{(m)}(t)|\mathbf{h}_i^{(m')}(t - 1))} \\
+p_b^{(m')}(t - 1)    &= \sum_{m=1}^M r^{(m,m')}(t, t - 1)
+\end{align}
+giving the approximate distribution
+\begin{equation} \label{Ph}
+P(\mathbf{h}_i(t) | N, \theta^{old}) = \sum_{m'=1}^{M} p_b^{(m')} \delta\left[\mathbf{h}_i(t) - \mathbf{h}_i^{(m')}(t)\right]
+\end{equation}
+where $\delta$ is the Dirac delta.
+
+\subsection{M Step}
+We performed the M step using MATLAB's optimization toolbox with the
+objective function (TODO) subject to the following constraints:
+\begin{enumerate}
+\item TODO
+\end{enumerate}
+
+Evaluating $Q$ is expensive as it requires a complete pass over the
+data---up to 15,000 timesteps. Analytical derivatives are essential.
+Fortunately, they are not difficult to derive. Denote by
+$\theta_1, \theta_2$ any scalar parameters. Then
+\begin{align*}
+\frac{\partial Q}{\partial \theta_1} &= \left(1 - n_i(t)\right) \left(-\exp{\left\{-e^{J_i(t)}\right\}} \Delta \frac{\partial J}{\partial \theta_1}\right) \\
+    &+ n_i(t) \frac{\exp{ \left\{ -e^{J_i(t)} \Delta + J_i(t) \right\}} \Delta \frac{\partial J}{\partial_\theta1} }{1 - \exp{\left\{-e^{J_i(t)}\Delta\right\}}} \\
+\frac{\partial^2 Q}{\partial \theta_1 \partial \theta_2} / \frac{\partial J}{\partial \theta_1} \frac{\partial J}{\partial \theta_2} &= \exp{\left\{-e^{J_i(t)\Delta} + J_i(t)\right\}}\Delta \\
+ &+ \frac{\exp{\left\{-2e^{J_i(t)}\Delta + 2J_i(t)\right\}}\Delta^2}{1 - \exp{\left\{-e^{J_i(t)\Delta}\right\}}} \\
+ &+ \exp{\left\{-e^{J_i(t)\Delta} + 2J_i(t)\right\}} \Delta^2 
+\end{align*}
+We omit the $\dfrac{\partial^2 J}{\partial \theta_1^2}$, since $J$
+is linear in each variable, so the second derivatives are zero. To
+compute both the gradient and Hessian, parameter, we simply multiply
+the general forms above by each one of:
+\begin{align}
+\frac{\partial J_i(t)}{\partial b_i}         &= 1 \\
+\frac{\partial J_i(t)}{\partial w_{ij}}      &= h_{ij}(t) \\
+\frac{\partial J_i(t)}{\partial \beta_{ijs}} &= n_i(t - s)
+\end{align}
 
 \section{Experiments}
 \section{Data Source \& Simulation}

@@ -111,7 +111,7 @@ while(norm(w - w_prev) > thresh_w)
 
             %% Initialize the intrinsic parameters
             theta = [b(i) w(i,:)];
-            old_theta = ones(size(theta))*100;
+            theta_old = ones(size(theta))*100;
             
             while(norm(theta - theta_old) > .01)
             
@@ -144,10 +144,10 @@ while(norm(w - w_prev) > thresh_w)
             beta_subset = reshape(beta(i,:,:), N, S - 1);
 
             %% M step for the intrinsic parameters for one neuron
-            theta = m_step_beta(theta, optim_options, N, beta_bound, S, w(i,:), b(i), squeeze(h(i,:,:,:)), n, i,...
+            theta = m_step_beta(theta, optim_options, beta_bound, S, w(i,:), b(i), squeeze(h(i,:,:,:)), n, i,...
                 delta, tau, sigma, squeeze(p_weights(i,:,:)), beta_reg);
             
-            beta(i,:,:) = reshape(theta(N+2:end), 1, N, (S - 1));
+            beta(i,:,:) = reshape(theta, 1, N, (S - 1));
 
         end
         disp(['NEURON ' num2str(i) ' DONE BETA!']);

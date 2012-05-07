@@ -1,4 +1,4 @@
-function [q g H] = q_single_neuron_beta(theta, S, w, h, n, i, delta, tau, sigma, p_weights, beta_reg)
+function [q g H] = q_single_neuron_beta(theta, S, w, b, h, n, i, delta, tau, sigma, p_weights, beta_reg)
 
 %function q = q_single_neuron(theta_intrinsic, params, h, n, i, delta, tau, sigma, p_weights)
 %Q_SINGLE_NEURON 
@@ -39,8 +39,8 @@ beta = reshape(theta, N, S - 1);
 % reg_param2 = 0;
 q_sum = 0;
 
-g = zeros(N*S-S, 1);
-H = zeros(N*S-S, N*S-S);
+g = zeros(N*S-N, 1);
+H = zeros(N*S-N, N*S-N);
 
 %disp('running objective function');
 
@@ -50,12 +50,8 @@ for t = S+1:T
     % dJ(2:N+1) = dJ_i/dw_{ij} = h_{ij}(t)
     % dJ(N+2:N*S+3) = dJ_i/dbeta_{i,j,s} = n(j,t);    
     
-    dJ = zeros(N*S-S, 1);
-    dJ(1) = 1;    
-    dJ(2:(N+1)) = p_weights(t,:) * reshape(h(:,t,:), N, M)';
-        
     n_terms = n(:,(t-2):-1:(t-S));    
-    dJ((N+2):end) = n_terms(:);
+    dJ = n_terms(:);
    
     % Common gradient terms for this timestep (to multiply with dJ)
     % Both these techniques work due to distributive property
@@ -68,7 +64,7 @@ for t = S+1:T
     I = sum(I_terms(:));    
     
     for m = 1:M                
-        J = b_i + I + w * h(:,t,m);
+        J = b + I + w * h(:,t,m);
         
         eJd = exp(J)*delta;
         % The expensive computations happen when n(i,t) == 1, which is
@@ -139,5 +135,5 @@ H = -H;
 % No regularization for H, since the L1 regularization terms have zero
 % second derivative
 
-q = -q_sum + w_reg * sum(abs(w)) + beta_reg * sum(abs(flatbeta));
+q = -q_sum + beta_reg * sum(abs(flatbeta));
 %q = -q_sum;

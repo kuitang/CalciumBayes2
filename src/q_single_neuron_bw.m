@@ -41,8 +41,8 @@ w = reshape(theta(2:end),1,N);
 % reg_param2 = 0;
 q_sum = 0;
 
-g = zeros(N*S+1, 1);
-H = zeros(N*S+1, N*S+1);
+g = zeros(N+1, 1);
+H = zeros(N+1, N+1);
 
 %disp('running objective function');
 
@@ -128,7 +128,6 @@ end
 
 % Add regularization (to the variables only)
 
-flatbeta = beta(:);
 
 g = -g;
 g(2:N+1) = g(2:N+1) + w_reg * sign(w(:));
@@ -140,5 +139,5 @@ H = -H;
 % No regularization for H, since the L1 regularization terms have zero
 % second derivative
 
-q = -q_sum + w_reg * sum(abs(w)) + beta_reg * sum(abs(flatbeta));
+q = -q_sum + w_reg * sum(abs(w));
 %q = -q_sum;

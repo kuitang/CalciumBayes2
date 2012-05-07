@@ -37,8 +37,17 @@ end
 
 Sim.w = Sim.w .* (binornd(1,Sim.sparesness,N,N));
 for i = 1:N   
-    Sim.w(i,i) = -abs(normrnd(.6,.2));
+    Sim.w(i,i) = -abs(normrnd(.4,.2)); %was .6
 end
+
+%%%%%%%%%%%BAD CODE BELOW, USED IN SPECIFIC INSTANCE
+
+Sim.w(12,13) = 2.0;
+Sim.w(13,14) = 2.0;
+Sim.w(14,15) = 2.0;
+Sim.w(15,1) = 2.0;
+
+%%%%%%%%%%%
 
 Sim.n = zeros(N,T);
 for i = 1:N

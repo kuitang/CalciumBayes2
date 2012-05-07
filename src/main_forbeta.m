@@ -155,7 +155,7 @@ while(norm(w - w_prev) > thresh_w)
     disp(ll);
     disp('diff = ');
     disp(ll(iters) - ll(iters-1));
-    save([data '_original.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
+    save([data '_forbeta.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
 
 
 end

@@ -10,7 +10,7 @@ run_parallel = 1;
 % truncate the data even more!
 % truncdata = truncdata(:,1:100);
 % n = truncdata;
-data = '../data/25n_forbeta';
+data = '../data/25n_for_beta';
 load([data '.mat'])
 n = sim.n(1:12,1:15000);
 %load('../data/good_sim_data_01.mat')

@@ -59,7 +59,7 @@ if run_parallel
 
         w = w .* binornd(1,.1,N,N);%second arg is "sparesness"
 
-
+        llv = zeros(N,1,codist);
 %        for i = drange(1:N)
 %            w(i,i) = -abs(normrnd(.6,.2));
 %        end

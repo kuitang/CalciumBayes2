@@ -59,7 +59,7 @@ if run_parallel
 
         w = w .* binornd(1,.1,N,N);%second arg is "sparesness"
 
-        llv = zeros(N,1,codist);
+
 %        for i = drange(1:N)
 %            w(i,i) = -abs(normrnd(.6,.2));
 %        end
@@ -110,7 +110,7 @@ while(norm(w - w_prev) > thresh_w)
             disp(['Neuron ' num2str(i) '/' num2str(N)]);            
 
             %% Initialize the intrinsic parameters
-            theta = [b(i) w(i,:) reshape(beta(i, :, :),1,N*S-N)];
+            theta = [b(i) w(i,:)];
                 
                 
             %% E step (SMC) for one neuron                
@@ -118,10 +118,28 @@ while(norm(w - w_prev) > thresh_w)
             [p_weights(i,:,:) h(i,:,:,:)] = e_step_smc(i, M, tau, delta, sigma, beta_subset, b(i), w(i,:), n);
 
             %% M step for the intrinsic parameters for one neuron
-            theta = m_step_full(theta, optim_options, N, beta_bound, w_bound, beta_subset, w(i,:), squeeze(h(i,:,:,:)), n, i,...
+            theta = m_step_bw(theta, optim_options, N, beta_bound, w_bound, beta_subset, w(i,:), squeeze(h(i,:,:,:)), n, i,...
                 delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg, beta_reg);
             b(i,1) = theta(1);
             w(i,:) = reshape(theta(2:N+1),1,N);
+            disp('new params:');
+            disp(b(i,1));
+            disp(w(i,:));
+        end
+           disp(['NEURON ' num2str(i) ' DONE!']);
+    end
+    spmd(N)  
+        for i = drange(1:N)
+            disp(['Neuron ' num2str(i) '/' num2str(N)]);            
+
+            %% Initialize the intrinsic parameters
+            theta = [reshape(beta(i, :, :),1,N*S-N)];
+                
+            beta_subset = reshape(beta(i,:,:), N, S - 1);
+
+            %% M step for the intrinsic parameters for one neuron
+            theta = m_step_beta(theta, optim_options, N, beta_bound, w_bound, beta_subset, w(i,:), b(i), squeeze(h(i,:,:,:)), n, i,...
+                delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg, beta_reg);
             beta(i,:,:) = reshape(theta(N+2:end), 1, N, (S - 1));
             disp('new params:');
             disp(b(i,1));
@@ -129,28 +147,17 @@ while(norm(w - w_prev) > thresh_w)
         end
            disp(['NEURON ' num2str(i) ' DONE!']);
     end
-
-    disp('OVER!');
-    disp(b);
-    disp(w);
+    
     iters = iters + 1;
     w_gathered = gather(w);
     beta_gathered = gather(beta);
     b_gathered = gather(b);
+    save([data '_results'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data');
     %% Log likelihood for whole model'
-    spmd
-        for i = drange(1:N)
-           llv(i,1) = log_likelihood(i, reshape(beta(i,:,:),N,S-1), b(i), w(i,:), squeeze(h(i,:,:,:)),n,delta,squeeze(p_weights(i,:,:)));
-        end
-    end
-    nll = sum(gather(llv));
-        ll = [ll nll];
-    disp('ll =');
-    disp(ll);
-    disp('diff = ');
-    disp(ll(iters) - ll(iters-1));
-    save([data '_beta.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
-
+    %nll = log_likelihood(beta, b, w, h, n, delta, p_weights);
+    %ll = [ll nll];
+    %disp('nll =');
+    %disp(nll); 
 
 end
 

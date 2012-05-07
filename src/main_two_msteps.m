@@ -111,23 +111,28 @@ while(norm(w - w_prev) > thresh_w)
 
             %% Initialize the intrinsic parameters
             theta = [b(i) w(i,:)];
-                
-                
-            %% E step (SMC) for one neuron                
-            beta_subset = reshape(beta(i,:,:), N, S - 1);
-            [p_weights(i,:,:) h(i,:,:,:)] = e_step_smc(i, M, tau, delta, sigma, beta_subset, b(i), w(i,:), n);
-
-            %% M step for the intrinsic parameters for one neuron
-            theta = m_step_bw(theta, optim_options, w_bound, beta_subset, squeeze(h(i,:,:,:)), n, i,...
-                delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg);
+            old_theta = ones(size(theta))*100;
             
-            b(i,1) = theta(1);
-            w(i,:) = reshape(theta(2:N+1),1,N);
-            disp('new params:');
-            disp(b(i,1));
-            disp(w(i,:));
+            while(norm(theta - theta_old) > .01)
+            
+                theta_old = theta;
+                %% E step (SMC) for one neuron                
+                beta_subset = reshape(beta(i,:,:), N, S - 1);
+                [p_weights(i,:,:) h(i,:,:,:)] = e_step_smc(i, M, tau, delta, sigma, beta_subset, b(i), w(i,:), n);
+
+                %% M step for the intrinsic parameters for one neuron
+                theta = m_step_bw(theta, optim_options, w_bound, beta_subset, squeeze(h(i,:,:,:)), n, i,...
+                    delta, tau, sigma, squeeze(p_weights(i,:,:)), w_reg);
+            
+                b(i,1) = theta(1);
+                w(i,:) = reshape(theta(2:N+1),1,N);
+                disp('new params:');
+                disp(b(i,1));
+                disp(w(i,:));
+            
+            end
         end
-           disp(['NEURON ' num2str(i) ' DONE!']);
+        disp(['NEURON ' num2str(i) ' DONE BW!']);
     end
     spmd(N)  
         for i = drange(1:N)
@@ -143,9 +148,9 @@ while(norm(w - w_prev) > thresh_w)
                 delta, tau, sigma, squeeze(p_weights(i,:,:)), beta_reg);
             
             beta(i,:,:) = reshape(theta(N+2:end), 1, N, (S - 1));
-            disp('new params:');
+
         end
-           disp(['NEURON ' num2str(i) ' DONE!']);
+        disp(['NEURON ' num2str(i) ' DONE BETA!']);
     end
     
     disp('OVER!');

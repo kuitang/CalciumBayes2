@@ -134,11 +134,12 @@ while(norm(w - w_prev) > thresh_w)
             
             for t = S+1:T
                 for j = 1:N
-                    for m = 1:M                 
+%                     for m = 1:M                 
                         
-                        sigma_sum = sigma_sum + p_weights(i,t,m)*(h(i,j,t,m) - (1 - delta/tau)*h(i,j,t-1,m) - n(j,t-1))^2;
+                        sigma_sum = sigma_sum + reshape(p_weights(i,t,:),1,M) * ...
+                            reshape((h(i,j,t,:) - (1 - delta/tau)*h(i,j,t-1,:) - n(j,t-1))^2,M,1);
             
-                    end
+%                     end
                 end
             end
             sigma_sq = sigma_sum / (N * T * delta);

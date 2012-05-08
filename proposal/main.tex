@@ -166,12 +166,6 @@ the model scale with the timestep size, which is determined by
 temporal resolution of observed data and computational complexity
 of memory.
 
-In this model, we set $\tau = 0.02\text{s}$ to match
-experimentally-observed values \citep{mishchencko2011} and we set
-$\sigma = .02$. Although the model supports separate decay
-and noise terms for each pair of neurons, we used single global
-values for simplicity.
-
 % units: secs
 % tau = 0.02
 % delta = 0.01
@@ -188,13 +182,13 @@ I_i(t)=\displaystyle\sum\limits_{s=2}^S\sum\limits_{j=1}^N \beta_{ijs}n_j(t-s\De
 to the input function $J_i(t)$. Here, $s$ is the number of time
 steps back and $\beta_{ijs}$ is the weight of the indirect influence
 of $n_j(t-s\Delta)$ on $n_i(t)$. Along with inferring the direct connectivity matrix, $W$, we will
-also infer the three dimensional indirect connectivity matrix, $\beta$.
+also infer the three dimensional indirect connectivity matrix, $\beta$, and the instrinsic neuron parameters $\mathbf{b}$.
 
 Following \citep{mishchencko2011}, we define the spiking probability as 
 \begin{equation} \label{f}
 f(J) = P\left(n>0 | n \sim \text{Poiss}(e^J\Delta)\right) = 1 - \exp(-e^J\Delta)
 \end{equation}
-which completes the setup for the generalized linear model with joint probability,
+which completes the setup for the generalized linear model. The joint probability of the entire graphical model is then
 
 \begin{equation} \label{f}
 P(H,N|\theta) = \prod_{it}P(n_i(t)|\mathbf{h}_i(t),\mathbf{n}(t-2),...,\mathbf{n}(t-S),\theta)P(\mathbf{h}_i(t)|,\mathbf{h}_i(t-1),\mathbf{n}(t-1),\theta).
@@ -215,7 +209,7 @@ the sparsity assumption. It should be noted that these priors are "improper prio
 \section{Inference}
 \subsection{Method \& Strategy}
 We fit a maximum a posteriori estimate of the model through EM.  For
-each neuron $i$, we represent vector of incoming history terms from
+each neuron $i$, we represent the vector of incoming history terms from
 time $t$ as $\mathbf{h}_i(t)$, and similarly for the vector of
 incoming weights. $H$ denotes the set of all history terms, $N$
 denotes the set of all spike trains, and $\theta$ denotes the set
@@ -301,27 +295,6 @@ Furthermore, we included an L1-regularizer on both $W$ and $\beta$ with $\lambda
 \theta &= \argmax_{\theta} \left\{ \int{ \log\left[P(H,N|\theta)\right] P(H|N,\theta^{old})P(\theta^{old}) dH }\right\}
 \\                     &= \argmax_{\theta} \left\{\sum_{it} \int \log\left[P(\mathbf{h}_i(t),n_i(t)|\theta^{old})\right] P(\mathbf{h}_i(t)|N,b_i,\mathbf{w}) d\mathbf{h}_i(t) - \lambda_{W}\sum_{ij}|w_{ij}| - \lambda_{\beta}\sum_{ijs}|\beta_{ijs}|\right\}
 \end{align*} 
-Evaluating $Q$ is expensive as it requires a complete pass over the
-data---up to 15,000 timesteps. Analytical derivatives - the gradient and Hessian - are essential;
-fortunately, they are not difficult to derive. Denote by
-$\theta_1, \theta_2$ any scalar parameters. Then
-\begin{align*}
-\frac{\partial Q}{\partial \theta_1} &= \left(1 - n_i(t)\right) \left(-\exp{\left\{-e^{J_i(t)}\right\}} \Delta \frac{\partial J}{\partial \theta_1}\right) \\
-    &+ n_i(t) \frac{\exp{ \left\{ -e^{J_i(t)} \Delta + J_i(t) \right\}} \Delta \frac{\partial J}{\partial_\theta1} }{1 - \exp{\left\{-e^{J_i(t)}\Delta\right\}}} \\
-\frac{\partial^2 Q}{\partial \theta_1 \partial \theta_2} / \frac{\partial J}{\partial \theta_1} \frac{\partial J}{\partial \theta_2} &= \exp{\left\{-e^{J_i(t)\Delta} + J_i(t)\right\}}\Delta \\
- &+ \frac{\exp{\left\{-2e^{J_i(t)}\Delta + 2J_i(t)\right\}}\Delta^2}{1 - \exp{\left\{-e^{J_i(t)\Delta}\right\}}} \\
- &+ \exp{\left\{-e^{J_i(t)\Delta} + 2J_i(t)\right\}} \Delta^2 
-\end{align*}
-We omit the $\dfrac{\partial^2 J}{\partial \theta_1^2}$, since $J$
-is linear in each variable, so the second derivatives are zero. To
-compute both the gradient and Hessian, parameter, we simply multiply
-the general forms above by each one of:
-\begin{align}
-\frac{\partial J_i(t)}{\partial b_i}         &= 1 \\
-\frac{\partial J_i(t)}{\partial w_{ij}}      &= h_{ij}(t) \\
-\frac{\partial J_i(t)}{\partial \beta_{ijs}} &= n_i(t - s)
-\end{align}
-
 \section{Experiments}
 
 \subsection{Data Source \& Simulation}
@@ -368,4 +341,31 @@ While we feel confident that our algorithm and methodology are sound and we see 
 \bibliographystyle{plainnat}
 \bibliography{refs} 
 \end{small}
+
+\section{Appendix}
+\subsection{Hyperparameters}
+We set $\tau=.02$ sec and $\sigma=.02$.
+\subsection{Derivatives for M-step}
+Evaluating $Q$ is expensive as it requires a complete pass over the
+data---up to 15,000 timesteps. Analytical derivatives - the gradient and Hessian - are essential;
+fortunately, they are not difficult to derive. Denote by
+$\theta_1, \theta_2$ any scalar parameters. Then
+\begin{align*}
+\frac{\partial Q}{\partial \theta_1} &= \left(1 - n_i(t)\right) \left(-\exp{\left\{-e^{J_i(t)}\right\}} \Delta \frac{\partial J}{\partial \theta_1}\right) \\
+    &+ n_i(t) \frac{\exp{ \left\{ -e^{J_i(t)} \Delta + J_i(t) \right\}} \Delta \frac{\partial J}{\partial_\theta1} }{1 - \exp{\left\{-e^{J_i(t)}\Delta\right\}}} \\
+\frac{\partial^2 Q}{\partial \theta_1 \partial \theta_2} / \frac{\partial J}{\partial \theta_1} \frac{\partial J}{\partial \theta_2} &= \exp{\left\{-e^{J_i(t)\Delta} + J_i(t)\right\}}\Delta \\
+ &+ \frac{\exp{\left\{-2e^{J_i(t)}\Delta + 2J_i(t)\right\}}\Delta^2}{1 - \exp{\left\{-e^{J_i(t)\Delta}\right\}}} \\
+ &+ \exp{\left\{-e^{J_i(t)\Delta} + 2J_i(t)\right\}} \Delta^2 
+\end{align*}
+We omit the $\dfrac{\partial^2 J}{\partial \theta_1^2}$, since $J$
+is linear in each variable, so the second derivatives are zero. To
+compute both the gradient and Hessian, parameter, we simply multiply
+the general forms above by each one of:
+\begin{align}
+\frac{\partial J_i(t)}{\partial b_i}         &= 1 \\
+\frac{\partial J_i(t)}{\partial w_{ij}}      &= h_{ij}(t) \\
+\frac{\partial J_i(t)}{\partial \beta_{ijs}} &= n_i(t - s)
+\end{align}
+
+
 \end{document}

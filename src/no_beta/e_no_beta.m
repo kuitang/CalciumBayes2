@@ -1,4 +1,4 @@
-function [ pb h ] = e_step_smc( i, M, tau, delta, sigma, b, w, data )
+function [ pb h ] = e_step_no_beta( i, M, tau, delta, sigma, b, w, data )
 %e_step_smc Perform the sampling SMC E-step for one neuron
 %   i - which neuron (scalar)
 %   M - number of particles (scalar)
@@ -50,7 +50,7 @@ for t = S+2 : T
         %h(:,t,m) = normrnd(h_mean, sd);        
         h(:,t,m) = randn(N, 1) * sd + h_mean;
 
-        J = b + I + w * h(:,t,m);
+        J = b + w * h(:,t,m);
 
         % Compute probabilities
         % q = normpdf(h(:,t,m), h_mean, sd)

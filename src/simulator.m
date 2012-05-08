@@ -6,7 +6,7 @@ Sim.T = T;
 %%%%%
 Sim.delta = .010;
 Sim.tau = .020;
-Sim.sigma = .05;
+Sim.sigma = .25;
 %%%%%
 Sim.h=zeros(N,N,T);
 Sim.f_J = zeros(N,T);

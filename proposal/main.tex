@@ -19,7 +19,6 @@
 %
 \newcommand{\ignore}[1]{}
 \newcommand{\comment}[1]{}
-\newcommand{\figref}[1]{\figurename~\ref{#1}}
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 \title{Inferring Direct and Indirect Functional Connectivity Between Neurons From Multiple Neural Spike Train Data}
@@ -316,41 +315,41 @@ The simulated neuronal spike train data was generated from our model using equat
 Before investigating the effects of our novel $\bm{\beta}$ terms, we validated our algorithm by inferring only the $\mathbf{b}$ and $W$ parameters of a completely observed set of 12 neurons. Because we observe the full population, the $\bm{\beta}$ terms have no meaning and are omitted.
 
 \begin{figure}
-\label{validation}
+\label{fig:validation}
 \centering
 \subfigure[Baselines]{
-  \includegraphics[width=0.48\textwidth, trim=40mm 80mm 40mm 60mm, clip]{12n_noise_b}
+  \includegraphics[width=0.48\textwidth, trim=20mm 80mm 40mm 95mm, clip]{12n_noise_b}
 }
 \subfigure[Connectivity Weights]{
-  \includegraphics[width=0.48\textwidth, trim=40mm 80mm 40mm 60mm, clip]{12n_noise_w}
+  \includegraphics[width=0.48\textwidth, trim=20mm 80mm 40mm 87mm, clip]{12n_noise_w}
 }
 \caption{Inferred vs. true $b_i$ and $w_{ij}$ values for fully observed set of 12 neurons.}
 \end{figure}
 
-As shown in Figure~\ref{validation}, we were able to closely retrieve the parameters and therefore are confident that our algorithm works. However, it should be noted that here as well as in other experiments we generally underestimated inhibitory weights. This makes sense because firing is sparse in these networks and inferring inhibitory connections is dependent on coincident firing between an excitatory neuron, and inhibitory neuron, and a shared target neuron. Furthermore, it is difficult to determine an inhibitory weight unless a target neuron is firing tonically. Nonetheless, strong inhibitory connections are still well represented in our results.
+As shown in Figure~1, we were able to closely retrieve the parameters and therefore are confident that our algorithm works. However, it should be noted that here as well as in other experiments we generally underestimated inhibitory weights. This makes sense because firing is sparse in these networks and inferring inhibitory connections is dependent on coincident firing between an excitatory neuron, and inhibitory neuron, and a shared target neuron. Furthermore, it is difficult to determine an inhibitory weight unless a target neuron is firing tonically. Nonetheless, strong inhibitory connections are still well represented in our results.
 
 \subsubsection{Indirect Weights}
 
 \begin{figure}
-\label{indirect}
+\label{fig:indirect}
 \centering
 \subfigure[Baselines]{
-  \includegraphics[width=0.48\textwidth, trim=40mm 80mm 40mm 40mm, clip]{25n_nobeta_b}
+  \includegraphics[width=0.48\textwidth, trim=20mm 80mm 40mm 95mm, clip]{25n_nobeta_b}
 }
 \subfigure[Connectivity Weights]{
-  \includegraphics[width=0.48\textwidth, trim=40mm 80mm 40mm 40mm, clip]{25n_nobeta_w}
+  \includegraphics[width=0.48\textwidth, trim=20mm 80mm 40mm 95mm, clip]{25n_nobeta_w}
 }
 \subfigure[Baselines with Indirect Weights]{
-  \includegraphics[width=0.48\textwidth, trim=40mm 80mm 40mm 40mm, clip]{25n_beta_b}
+  \includegraphics[width=0.48\textwidth, trim=20mm 80mm 40mm 95mm, clip]{25n_beta_b}
 }
 \subfigure[Connectivity Weights with Indirect Weights]{
-  \includegraphics[width=0.48\textwidth, trim=40mm 80mm 40mm 40mm, clip]{25n_beta_w}
+  \includegraphics[width=0.48\textwidth, trim=20mm 80mm 40mm 95mm, clip]{25n_beta_w}
 }
 \caption{Inferred vs. true $b_i$ and $w_{ij}$ values for an observed set of 12 out of 25 total neurons. The top row shows inference without indirect weights. The bottom row shows the accuracy improvement when indirect weights are added to the model. See text for details.}
 \end{figure}
 In the case of simulated data, we have an interesting opportunity to test the quality of the indirect component of our model. We can simulate a large population neurons and only use a subset as the observed neurons in our model. We can then compare our inferred indirect weights with the known direct weights of the simulated data. Also, we can compare the results of the $\mathbf{b}$ and $W$ parameters of the same data with $\bm{\beta}$ inferred and not inferred.
 
-When we performed inference on a subpopulation of 12 neurons (out of 25 total) and omitted the $\bm{\beta}$ parameters we still found a high correlation between the actual and inferred values of $\mathbf{b}$ and $W$, however we consistently overestimated the values of $\mathbf{b}$. When we included the $\bm{\beta}$ parameters, we found that the correlation remained more or less the same for both $\mathbf{b}$ and $W$, but we much more accurately inferred the $\mathbf{b}$ values \figref{indirect}. These results make sense because without indirect weights, any excitatory input into the system (excitatory inputs are more likely in our simulation and in actual nervous systems) would have to be summed into the $\mathbf{b}$ parameters. When we include indirect weights, these input can be put in their proper place, making estimations of $\mathbf{b}$ more accurate. 
+When we performed inference on a subpopulation of 12 neurons (out of 25 total) and omitted the $\bm{\beta}$ parameters we still found a high correlation between the actual and inferred values of $\mathbf{b}$ and $W$, however we consistently overestimated the values of $\mathbf{b}$. When we included the $\bm{\beta}$ parameters, we found that the correlation remained more or less the same for both $\mathbf{b}$ and $W$, but we much more accurately inferred the $\mathbf{b}$ values Figure~2. These results make sense because without indirect weights, any excitatory input into the system (excitatory inputs are more likely in our simulation and in actual nervous systems) would have to be summed into the $\mathbf{b}$ parameters. When we include indirect weights, these input can be put in their proper place, making estimations of $\mathbf{b}$ more accurate. 
 
 We also designed a network such that there was a series of strong excitatory connections from an observed neuron, through several unobserved neurons, and back into the observed population.  When we performed inference over this network, we were able to find relatively strong $\beta$ value that corresponded with this unobserved path of influence on the appropriate time scale. For example, the network contained the chain of weights $w_{13,4}=1.9$, $w_{1,13}=2.0$. This results in an indirect connection from neuron 4 to neuron 1 through the unobserved neuron 13. We found the corresponding values $\beta_{1,4,1}=.33$, $\beta_{1,4,2}=.34$, and $\beta_{1,4,3}=.17$. (Compare these values to the average over $\beta_{1js}=.009$ and variance of .016.) The subscripts here mean that neuron 4 is influencing neuron 1 indirectly over 2-4 time steps.
 
@@ -398,17 +397,18 @@ the general forms above by each one of:
 
 \subsection{Diagnostic Plots}
 \begin{figure}
-\label{loglikelihood}
+\label{fig:loglikelihood}
 \centering
-\includegraphics[width=0.98\textwidth, trim = 15mm 15mm 15mm 15mm, clip]{25n_noise_ll}
+\includegraphics[width=0.98\textwidth, trim = 0mm 15mm 15mm 0mm, clip]{25n_noise_ll}
 \caption{The log likelihood increases and converges.}
 \end{figure}
 
 \begin{figure}
-\label{loglikelihood}
+\label{fig:smc}
 \centering
-\includegraphics[width=0.98\textwidth, trim = 40mm 40mm 40mm 40mm, clip]{smc_figure}
+\includegraphics[width=0.98\textwidth, trim = 20mm 40mm 40mm 40mm, clip]{smc_figure}
 \caption{Output of one iteration of the SMC sampler. Green dot indicates a neural spike; blue lines indicate the mean of the filtered history terms on a single neuron. Since the model is probabilistic, not all large history terms induce a spike, and not all spikes force a large history term.}
 \end{figure}
+See Figures 3 and 4.
 
 \end{document}

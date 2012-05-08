@@ -319,10 +319,10 @@ Before investigating the effects of our novel $\bm{\beta}$ terms, we validated o
 \label{validation}
 \centering
 \subfigure[Baselines]{
-  \includegraphics[width=0.99\textwidth, trim=40mm 100mm 40mm 100mm, clip]{12n_noise_b}
+  \includegraphics[width=0.48\textwidth, trim=40mm 80mm 40mm 60mm, clip]{12n_noise_b}
 }
 \subfigure[Connectivity Weights]{
-  \includegraphics[width=0.99\textwidth, trim=40mm 100mm 40mm 100mm, clip]{12n_noise_w}
+  \includegraphics[width=0.48\textwidth, trim=40mm 80mm 40mm 60mm, clip]{12n_noise_w}
 }
 \caption{Inferred vs. true $b_i$ and $w_{ij}$ values for fully observed set of 12 neurons.}
 \end{figure}
@@ -396,21 +396,19 @@ the general forms above by each one of:
 \frac{\partial J_i(t)}{\partial \beta_{ijs}} &= n_i(t - s)
 \end{align}
 
-\subsection{Convergence of Log-Likelihood}
+\subsection{Diagnostic Plots}
 \begin{figure}
 \label{loglikelihood}
 \centering
-  \includegraphics[width=0.98\textwidth]{25n_noise_ll}
-  \caption{The log likelihood increases and converges.}
+\includegraphics[width=0.98\textwidth, trim = 15mm 15mm 15mm 15mm, clip]{25n_noise_ll}
+\caption{The log likelihood increases and converges.}
 \end{figure}
 
-\subsection{Examples SMC Results}
 \begin{figure}
 \label{loglikelihood}
 \centering
-  \includegraphics[width=0.98\textwidth]{smc_figure}
-  \caption{Output of one iteration of the SMC sampler. Green dot indicates a neural spike; blue lines indicate the mean of the filtered history terms on a single neuron. Since the model is probabilistic, not all large history terms induce a spike, and not all spikes force a large history term.}
+\includegraphics[width=0.98\textwidth, trim = 40mm 40mm 40mm 40mm, clip]{smc_figure}
+\caption{Output of one iteration of the SMC sampler. Green dot indicates a neural spike; blue lines indicate the mean of the filtered history terms on a single neuron. Since the model is probabilistic, not all large history terms induce a spike, and not all spikes force a large history term.}
 \end{figure}
-
 
 \end{document}

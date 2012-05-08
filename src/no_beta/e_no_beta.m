@@ -50,7 +50,7 @@ for t = S+2 : T
         %h(:,t,m) = normrnd(h_mean, sd);        
         h(:,t,m) = randn(N, 1) * sd + h_mean;
 
-        J = b + w * h(:,t,m);
+        J = b + I + w * h(:,t,m);
 
         % Compute probabilities
         % q = normpdf(h(:,t,m), h_mean, sd)

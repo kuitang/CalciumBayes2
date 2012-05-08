@@ -15,7 +15,7 @@ function [ pb h ] = e_step_smc( i, M, tau, delta, sigma, b, w, data )
 %   h - samples (N x T x M)
 
 [N, T] = size(data);
-
+S = 20;
 sd = sigma*sqrt(delta);
 
 Nthr = M / 2; % From [Vogelstein09]

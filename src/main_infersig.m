@@ -137,7 +137,7 @@ while(norm(w - w_prev) > thresh_w)
 %                     for m = 1:M                 
                         
                         sigma_sum = sigma_sum + reshape(p_weights(i,t,:),1,M) * ...
-                            reshape((h(i,j,t,:) - (1 - delta/tau)*h(i,j,t-1,:) - n(j,t-1))^2,M,1);
+                            reshape((h(i,j,t,:) - (1 - delta/tau)*h(i,j,t-1,:) - n(j,t-1)).^2,M,1);
             
 %                     end
                 end

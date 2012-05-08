@@ -1,4 +1,4 @@
-function [q g H] = q_single_neuron_full(theta, w, h, n, i, delta, tau, sigma, p_weights, w_reg)
+function [q g H] = q_no_beta(theta, w, h, n, i, delta, tau, sigma, p_weights, w_reg)
 
 %function q = q_single_neuron(theta_intrinsic, params, h, n, i, delta, tau, sigma, p_weights)
 %Q_SINGLE_NEURON 
@@ -33,15 +33,15 @@ function [q g H] = q_single_neuron_full(theta, w, h, n, i, delta, tau, sigma, p_
 M = size(h,3);
 b_i = theta(1);
 w = reshape(theta(2:N+1),1,N);
-
+S=20;
 %reg_param1 = 1e1;
 %reg_param2 = 1e1;
 % reg_param1 = 2;
 % reg_param2 = 0;
 q_sum = 0;
 
-g = zeros(N*S+1, 1);
-H = zeros(N*S+1, N*S+1);
+g = zeros(N+1, 1);
+H = zeros(N+1, N+1);
 
 %disp('running objective function');
 
@@ -51,7 +51,7 @@ for t = S+1:T
     % dJ(2:N+1) = dJ_i/dw_{ij} = h_{ij}(t)
     % dJ(N+2:N*S+3) = dJ_i/dbeta_{i,j,s} = n(j,t);    
     
-    dJ = zeros(N*S+1, 1);
+    dJ = zeros(N+1, 1);
     dJ(1) = 1;    
     dJ(2:(N+1)) = p_weights(t,:) * reshape(h(:,t,:), N, M)';
 
@@ -66,7 +66,7 @@ for t = S+1:T
   
     
     for m = 1:M                
-        J = b_i + I + w * h(:,t,m);
+        J = b_i + w * h(:,t,m);
         
         eJd = exp(J)*delta;
         % The expensive computations happen when n(i,t) == 1, which is

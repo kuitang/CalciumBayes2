@@ -202,7 +202,7 @@ or an inhibitory influence on postsynaptic neurons. We will include
 the sparseness prior in our model by adding an L1 regularization
 term to each $w_{ij}$. However, given that recent research has shown
 that neurotransmitter co-release is more common that once anticipated,
-we will not include a Dale's law prior in our model.
+we will not include a Dale's law prior in our model \citep{thomas2003}.
 We also add L1 regularization to the indirect influences, extending
 the sparsity assumption. It should be noted that these priors are "improper priors," that is they are unnormalized.
 
@@ -230,11 +230,11 @@ Since each individual HMM chain in this coupled HMM model is d-separated from ea
 
 The main challenge of the E-step is to update the joint distribution of the model by finding values for the hidden sequences $\mathbf{h}_i$. For this model there is no analytic update to the values of $H$, so we employ sampling to approximate distributions over each $\mathbf{h}_i(t)$. Since the transition probabilities, (\ref{h}), are linear-Gaussian distributions,
 but the emission probabilities, (\ref{f}), are not, we cannot
-use a standard Kalman filter \citep{bishop}.  Instead, we adapt a
-sequential Monte Carlo approach used in \citep{volgelstein2009,
+use a standard Kalman filter \citep{bishop2006}.  Instead, we adapt a
+sequential Monte Carlo approach used in \citep{vogelstein2009,
 mishchencko2011} to estimate the latent history terms by
 by producing a sampled approximation of $Q(\theta,\theta^{old})$. We
-use a standard forward particle filter \citep{bishop} and a marginal
+use a standard forward particle filter \citep{bishop2006} and a marginal
 backward smoother \citep{doucet2000} to obtain our samples.
 
 We initialize the particle filter by sampling $M$ particles from a
@@ -257,7 +257,7 @@ To prevent degeneracy, we employ stratified resampling such that we draw new sam
 N_{eff} = \left|\mathbf{p}_f(t)\right|^{-1},
 \end{equation}
 is less than $M/2$, where $\mathbf{p}_f(t)$ denotes a vector of all
-particle weights for one timestep \citep{volgelstein2009}. That is,
+particle weights for one timestep \citep{vogelstein2009}. That is,
 we draw $M$ new samples from our current set of samples with
 replacement with probabilities proportional to their current weights,
 and reset weights to uniform.
@@ -301,7 +301,7 @@ Furthermore, we included an L1-regularizer on both $W$ and $\beta$ with $\lambda
 
 We tested our model on actual multiple neuronal spike train data as well as on simulated spike trains. The actual data have been provided by the Buszaki Lab and was recorded simultaneously from 87 prefrontal cortex neurons of a behaving rat over the course of roughly 40 minutes. This data has been pre-processed so that we begin with the spike trains which are in the expected form of $n_i(t)$, that is binary random variables. 
 
-The simulated neuronal spike train data was generated from our model using equations \eqref{J}, \eqref{h}, and \eqref{f} and with $.02 \leq \sigma \leq .25$, $\tau = .02$, and $\Delta = .01$. However, it is very important to note that we did not include the term $I_(t)$ in simulation, since this value only carries meaning when dealing with a subpopulation of neurons. Values for $\mathbf{b}$ were chosen from from $\mathcal{N}(1.64,.2)$ and $W$ from $\mathcal{E}(.5)$ for excitatory connections and $\mathcal{E}(2.3)$ for inhibitory connections - where $\mathcal{E}(\lambda)$ signifies an exponential distribution with mean $\lambda$. $W$ was then altered such that only about 10\% of values were non-zero.
+The simulated neuronal spike train data was generated from our model using equations \eqref{J}, \eqref{h}, and \eqref{f} and with $.02 \leq \sigma \leq .25$, $\tau = .02$, and $\Delta = .01$. However, it is very important to note that we did not include the term $I_i(t)$ in simulation, since this value only carries meaning when dealing with a subpopulation of neurons. Values for $\mathbf{b}$ were chosen from from $\mathcal{N}(1.64,.2)$ and $W$ from $\mathcal{E}(.5)$ for excitatory connections and $\mathcal{E}(2.3)$ for inhibitory connections - where $\mathcal{E}(\lambda)$ signifies an exponential distribution with mean $\lambda$. $W$ was then altered such that only about 10\% of values were non-zero.
 
 \subsection{Results}
 
@@ -333,7 +333,7 @@ TODO PUT IN THESE RESULTS
 
 \section{Conclusions \& Future Directions}
 
-While we feel confident that our algorithm and methodology are sound and we see some improvement in inference when we include $\bm{\beta}$, there is clearly more work to be done to fit indirect connectivity into the current model. Though we improved the $mathbf{b}$ values, one would expect the values to be originally overestimated and then reduced instead of the opposite. This is because with indirect weights accounted for, their weights would have to be included in $mathbf{b}$. We plan to look into this logic more in further experiments. Also, we would like to investigate creating a prior for $\bm{\beta}$ using methods similar to the pattern-growth algorithms used in \citep{patnaik2011}.
+While we feel confident that our algorithm and methodology are sound and we see some improvement in inference when we include $\bm{\beta}$, there is clearly more work to be done to fit indirect connectivity into the current model. Though we improved the $\mathbf{b}$ values, one would expect the values to be originally overestimated and then reduced instead of the opposite. This is because with indirect weights accounted for, their weights would have to be included in $\mathbf{b}$. We plan to look into this logic more in further experiments. Also, we would like to investigate creating a prior for $\bm{\beta}$ using methods similar to the pattern-growth algorithms used in \citep{patnaik2011}.
 
 
 
@@ -344,7 +344,7 @@ While we feel confident that our algorithm and methodology are sound and we see 
 
 \section{Appendix}
 \subsection{Hyperparameters}
-We set $\tau=.02$ sec and $\sigma=.02$.
+We set $.02 \leq \sigma \leq .25$, $\tau = .02$ \citep{gerstner2002}, and $\Delta = .01$ for both the simulation and inference, though we did vary both $\sigma$ and $\tau$ and found our inference robust to those changes.
 \subsection{Derivatives for M-step}
 Evaluating $Q$ is expensive as it requires a complete pass over the
 data---up to 15,000 timesteps. Analytical derivatives - the gradient and Hessian - are essential;

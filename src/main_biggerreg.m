@@ -10,7 +10,7 @@ run_parallel = 1;
 % truncate the data even more!
 % truncdata = truncdata(:,1:100);
 % n = truncdata;
-data = '../data/25n_noise';
+data = '../data/25n_morenoise';
 load([data '.mat'])
 n = sim.n(1:12,1:15000);
 %load('../data/good_sim_data_01.mat')
@@ -24,14 +24,14 @@ optim_options = optimset('LargeScale','on','Algorithm', ...
 % Physical parameters (TODO: Set up and figure out scale!)
 % Currently using unit (discrete) time and bullshit values
 %sigma = 0.01;
-sigma = .05;
+sigma = .25;
 tau = .020; %set to match simulator
 delta = .010;
 
 beta_bound = 5;
 w_bound = 5;
-w_reg = 10;
-beta_reg = 5;
+w_reg = 4;
+beta_reg = 1;
 
 
 
@@ -138,18 +138,7 @@ while(norm(w - w_prev) > thresh_w)
     beta_gathered = gather(beta);
     b_gathered = gather(b);
     %% Log likelihood for whole model'
-    spmd
-        for i = drange(1:N)
-           llv(i,1) = log_likelihood(i, reshape(beta(i,:,:),N,S-1), b(i), w(i,:), squeeze(h(i,:,:,:)),n,delta,squeeze(p_weights(i,:,:)));
-        end
-    end
-    nll = sum(gather(llv));
-        ll = [ll nll];
-    disp('ll =');
-    disp(ll);
-    disp('diff = ');
-    disp(ll(iters) - ll(iters-1));
-    save([data '_biggerreg.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
+    save([data '_morenoise.mat'], 'iters','sigma', 'tau', 'delta', 'w_gathered', 'beta_gathered', 'b_gathered','data','ll');
 
 
 end

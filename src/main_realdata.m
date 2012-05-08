@@ -25,7 +25,7 @@ optim_options = optimset('LargeScale','on','Algorithm', ...
 % Currently using unit (discrete) time and bullshit values
 %sigma = 0.01;
 sigma = .05;
-tau = .020; %set to match simulator
+tau = .10; %set to match simulator
 delta = .010;
 
 beta_bound = 5;
